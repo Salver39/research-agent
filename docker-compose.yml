@@ -1,0 +1,32 @@
+name: research-agent
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./data:/data
+    env_file:
+      - .env
+    environment:
+      - CORS_ORIGINS=http://localhost:3001
+      - DATABASE_URL=sqlite+aiosqlite:////data/research_agent.db
+      - CHROMA_PERSIST_DIR=/data/chroma_db
+      - UPLOAD_DIR=/data/uploads
+      - OUTPUT_DIR=/data/outputs
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        BACKEND_URL: http://backend:8000
+        NEXT_PUBLIC_BACKEND_URL: http://localhost:8001
+    ports:
+      - "3001:3000"
+    environment:
+      - BACKEND_URL=http://backend:8000
+    depends_on:
+      - backend
+    restart: unless-stopped

@@ -1,0 +1,12 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+uploads/
+outputs/
+chroma_db/
+research_agent.db
+*.sqlite3
+.DS_Store

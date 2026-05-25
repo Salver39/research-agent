@@ -1,0 +1,20 @@
+# Railway config for the backend service.
+# Place this file in the service's root directory (backend/).
+#
+# In Railway dashboard:
+#   1. Create a new service from this repo.
+#   2. Set "Root Directory" to /backend so Railway uses backend/Dockerfile.
+#   3. Add a Volume mounted at /data (this is where SQLite, Chroma index,
+#      uploads, and generated documents live — without a volume everything is
+#      lost on every redeploy).
+#   4. Set the environment variables listed in docs/iteration-15-deploy.md.
+
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
