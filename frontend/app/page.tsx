@@ -36,7 +36,30 @@ export default function LandingScreen() {
       router.replace("/login");
       return;
     }
-    setAuthReady(true);
+    (async () => {
+      try {
+        const res = await fetch("/api/backend/api/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.status === 401) {
+          router.replace("/login");
+          return;
+        }
+        if (res.ok) {
+          const data = await res.json();
+          if (data.existing_session_id) {
+            if (data.existing_owner_token) {
+              saveOwnerToken(data.existing_session_id, data.existing_owner_token);
+            }
+            router.replace(`/session/${data.existing_session_id}`);
+            return;
+          }
+        }
+        setAuthReady(true);
+      } catch {
+        setAuthReady(true);
+      }
+    })();
   }, [router]);
 
   async function handleStart() {

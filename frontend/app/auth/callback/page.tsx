@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { saveAuthToken } from "@/lib/auth";
+import { saveAuthToken, saveOwnerToken } from "@/lib/auth";
 
 function CallbackInner() {
   const router = useRouter();
@@ -31,6 +31,9 @@ function CallbackInner() {
         }
         const data = await res.json();
         if (data.existing_session_id) {
+          if (data.existing_owner_token) {
+            saveOwnerToken(data.existing_session_id, data.existing_owner_token);
+          }
           router.replace(`/session/${data.existing_session_id}`);
         } else {
           router.replace("/");

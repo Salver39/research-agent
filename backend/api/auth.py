@@ -28,6 +28,7 @@ class RequestMagicLinkBody(BaseModel):
 class MeResponse(BaseModel):
     email: str
     existing_session_id: Optional[str] = None
+    existing_owner_token: Optional[str] = None
 
 
 def auth_required() -> bool:
@@ -141,4 +142,8 @@ async def verify_magic_link(token: str, db: AsyncSession = Depends(get_db)):
 async def me(user: User = Depends(require_user), db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(DBSession).where(DBSession.user_id == user.id))
     existing = result.scalars().first()
-    return MeResponse(email=user.email, existing_session_id=existing.id if existing else None)
+    return MeResponse(
+        email=user.email,
+        existing_session_id=existing.id if existing else None,
+        existing_owner_token=existing.owner_token if existing else None,
+    )

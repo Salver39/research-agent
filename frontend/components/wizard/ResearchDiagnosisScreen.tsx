@@ -36,12 +36,14 @@ export function ResearchDiagnosisScreen({ streaming, onConfirm, onEdit }: Props)
     );
   }
 
+  const uncertaintyTypes = diagnosis.uncertainty_types ?? [];
+  const preliminaryMethods = diagnosis.preliminary_methods ?? [];
   const uncertaintyLabels = [
-    ...diagnosis.uncertainty_types.map((t) => UNCERTAINTY_OPTIONS.find((o) => o.type === t)?.label ?? t),
+    ...uncertaintyTypes.map((t) => UNCERTAINTY_OPTIONS.find((o) => o.type === t)?.label ?? t),
     ...(diagnosis.custom_uncertainty ? [diagnosis.custom_uncertainty] : []),
   ];
-  const methodLabels = diagnosis.preliminary_methods.length > 0
-    ? diagnosis.preliminary_methods.map((m) => METHOD_LABELS[m] ?? m)
+  const methodLabels = preliminaryMethods.length > 0
+    ? preliminaryMethods.map((m) => METHOD_LABELS[m] ?? m)
     : ["Определим на этапе метода"];
 
   return (
