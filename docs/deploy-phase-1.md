@@ -13,9 +13,9 @@
 Тебе нужны 2–3 хоста:
 
 | Хост | Где | Пример |
-|---|---|---|
+| --- | --- | --- |
 | Frontend | Vercel | `yourdomain.com` или `your-project.vercel.app` |
-| Backend  | Railway | `api.yourdomain.com` или `your-project.up.railway.app` |
+| Backend | Railway | `api.yourdomain.com` или `your-project.up.railway.app` |
 | Email "from" | Resend | `noreply@yourdomain.com` (нужен верифицированный домен) |
 
 **Самый дешёвый старт**: использовать дефолтные домены Vercel/Railway (бесплатно). Для Resend сложнее — нужен **либо** свой домен (минимум `.com` за ~$10/год + 5 минут на DNS-записи Resend), **либо** `onboarding@resend.dev` (отдаст письма только на email владельца Resend-аккаунта — годится для smoke-теста, но не для реальных юзеров).
@@ -39,13 +39,13 @@
 1. Зайти на https://railway.app, выбрать существующий project или создать новый.
 2. **New Service → Deploy from GitHub Repo** (если репо на GitHub) или **Empty Service** + later push.
 3. Подключить репо. Если репо не на GitHub — установить Railway CLI:
-   ```
+```
    npm i -g @railway/cli
    railway login
    cd backend && railway link
    railway up
-   ```
-4. **Settings → Service → Root Directory: `/backend`**. Это критично — иначе Railway будет пытаться билдить из корня, где нет Dockerfile.
+```
+4. **Settings → Service → Root Directory: ****`/backend`**. Это критично — иначе Railway будет пытаться билдить из корня, где нет Dockerfile.
 5. Railway автоматически найдёт `backend/Dockerfile` и `backend/railway.toml`. Healthcheck на `/health` уже прописан.
 
 ### 1.2. Volume
@@ -100,11 +100,11 @@ curl https://<railway-public-url>/            # → {"message":"...","version":"
 
 1. На https://vercel.com → **Add New → Project**.
 2. Импортировать репо. Если не на GitHub — установить Vercel CLI:
-   ```
+```
    npm i -g vercel
    cd frontend && vercel
-   ```
-3. **Root Directory: `frontend`** (Vercel должен видеть `frontend/package.json`).
+```
+3. **Root Directory: ****`frontend`** (Vercel должен видеть `frontend/package.json`).
 4. **Framework Preset**: Next.js (определится автоматически из `vercel.json`).
 5. **Build Command**: оставить default (`npm run build`).
 
@@ -124,13 +124,13 @@ NEXT_PUBLIC_AUTH_MODE        = required
 
 1. **Deploy** — первый билд.
 2. (Опционально) **Settings → Domains → Add** свой домен. После добавления:
-   - Vercel выдаст DNS-записи.
-   - Когда домен заработает — обновить `FRONTEND_URL` и `CORS_ORIGINS` на Railway, и redeploy backend (Railway тоже env-as-build не использует, но процесс должен перезапуститься чтобы CORS подхватился).
+  - Vercel выдаст DNS-записи.
+  - Когда домен заработает — обновить `FRONTEND_URL` и `CORS_ORIGINS` на Railway, и redeploy backend (Railway тоже env-as-build не использует, но процесс должен перезапуститься чтобы CORS подхватился).
 
 ### 2.4. Smoke-проверка frontend
 
 1. Открыть `https://<vercel-public-url>/`.
-2. Ожидать **редирект на `/login`** (потому что `NEXT_PUBLIC_AUTH_MODE=required` и нет токена).
+2. Ожидать **редирект на ****`/login`** (потому что `NEXT_PUBLIC_AUTH_MODE=required` и нет токена).
 3. На `/login` ввести свой email → «Получить ссылку».
 4. Открыть почту → перейти по ссылке → должен быть редирект на `/auth/callback?auth_token=...` → автоматически на `/`.
 5. Заполнить landing-wizard → создать сессию → пройти этапы → выгрузить ZIP.
