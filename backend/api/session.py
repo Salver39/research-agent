@@ -4,7 +4,7 @@ import uuid
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -16,10 +16,13 @@ from db.models import Session as DBSession, User
 router = APIRouter()
 
 
+MAX_INPUT_LEN = 20_000
+
+
 class CreateSessionRequest(BaseModel):
-    task: str
-    business_goal: str = ""
-    business_context: str = ""
+    task: str = Field(..., max_length=MAX_INPUT_LEN)
+    business_goal: str = Field(default="", max_length=MAX_INPUT_LEN)
+    business_context: str = Field(default="", max_length=MAX_INPUT_LEN)
 
 
 class CreateSessionResponse(BaseModel):

@@ -10,6 +10,8 @@ import json
 import logging
 import os
 
+import openai
+
 from agents.base import _clean_json_text, _get_client
 
 logger = logging.getLogger(__name__)
@@ -96,6 +98,11 @@ async def validate_clarity(fields: dict[str, str | None]) -> dict:
                 model, response.usage.prompt_tokens, response.usage.completion_tokens,
                 response.choices[0].finish_reason or "?",
             )
+    except openai.NotFoundError as e:
+        # Misconfigured OPENAI_MODEL_MINI — visible as a single line in logs
+        # instead of a stack trace, since this is config, not a transient error.
+        logger.error("validate_clarity: model %r not available — check OPENAI_MODEL_MINI env (%s)", model, e)
+        return {"ok": True, "issues": {}}
     except Exception:
         logger.exception("validate_clarity: LLM call failed, failing open")
         return {"ok": True, "issues": {}}

@@ -3,18 +3,20 @@ from __future__ import annotations
 from typing import Optional
 
 from fastapi import APIRouter
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from agents.validator import validate_clarity
 
 router = APIRouter()
 
+MAX_INPUT_LEN = 20_000
+
 
 class ValidateClarityRequest(BaseModel):
-    business_goal: Optional[str] = None
-    business_context: Optional[str] = None
-    task: Optional[str] = None
-    decision: Optional[str] = None
+    business_goal: Optional[str] = Field(default=None, max_length=MAX_INPUT_LEN)
+    business_context: Optional[str] = Field(default=None, max_length=MAX_INPUT_LEN)
+    task: Optional[str] = Field(default=None, max_length=MAX_INPUT_LEN)
+    decision: Optional[str] = Field(default=None, max_length=MAX_INPUT_LEN)
 
 
 class ValidateClarityResponse(BaseModel):

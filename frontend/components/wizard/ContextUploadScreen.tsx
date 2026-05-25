@@ -168,6 +168,16 @@ export function ContextUploadScreen({ sessionId, onContinue }: Props) {
         </p>
       </div>
 
+      {/* Privacy disclaimer */}
+      <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 space-y-1">
+        <p className="font-medium">Куда уходят файлы</p>
+        <ul className="list-disc list-inside space-y-0.5 text-amber-800">
+          <li>Сохраняются на нашем сервере, индексируются локально для поиска по тексту.</li>
+          <li>Содержимое релевантных фрагментов отправляется в OpenAI для анализа.</li>
+          <li>Не загружайте документы под NDA или с персональными данными клиентов. Для таких задач — <a href="https://github.com/Salver39/research-agent" target="_blank" rel="noreferrer" className="underline">self-host</a>.</li>
+        </ul>
+      </div>
+
       {/* Drop zone */}
       <label
         onDragOver={(e) => { e.preventDefault(); setDragging(true); }}

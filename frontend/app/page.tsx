@@ -7,6 +7,8 @@ import { validateClarity, type ClarityField } from "@/lib/validateClarity";
 
 type Step = 1 | 2 | 3;
 
+const MAX_INPUT_LEN = 20_000;
+
 const FIELD_TO_STEP: Record<ClarityField, Step> = {
   business_goal: 1,
   business_context: 2,
@@ -157,6 +159,7 @@ export default function LandingScreen() {
                   setBusinessGoal(e.target.value);
                   if (clarityIssues.business_goal) setClarityIssues((p) => ({ ...p, business_goal: undefined }));
                 }}
+                maxLength={MAX_INPUT_LEN}
                 autoFocus
               />
               {clarityIssues.business_goal && (
@@ -191,6 +194,7 @@ export default function LandingScreen() {
                   setBusinessContext(e.target.value);
                   if (clarityIssues.business_context) setClarityIssues((p) => ({ ...p, business_context: undefined }));
                 }}
+                maxLength={MAX_INPUT_LEN}
                 autoFocus
               />
               {clarityIssues.business_context && (
@@ -234,6 +238,7 @@ export default function LandingScreen() {
                   setTask(e.target.value);
                   if (clarityIssues.task) setClarityIssues((p) => ({ ...p, task: undefined }));
                 }}
+                maxLength={MAX_INPUT_LEN}
                 autoFocus
               />
               {clarityIssues.task && (
