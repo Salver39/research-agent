@@ -98,6 +98,8 @@ async def validate_clarity(fields: dict[str, str | None]) -> dict:
                 model, response.usage.prompt_tokens, response.usage.completion_tokens,
                 response.choices[0].finish_reason or "?",
             )
+            from db.usage import log_usage
+            await log_usage(model, response.usage.prompt_tokens, response.usage.completion_tokens)
     except openai.NotFoundError as e:
         # Misconfigured OPENAI_MODEL_MINI — visible as a single line in logs
         # instead of a stack trace, since this is config, not a transient error.

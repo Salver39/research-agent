@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.database import get_db
 from db.models import MagicLinkToken, Session as DBSession, User
+from db.usage import check_budget
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -92,6 +93,11 @@ async def _send_magic_link_email(to_email: str, verify_url: str) -> None:
 
 @router.post("/auth/request")
 async def request_magic_link(body: RequestMagicLinkBody, db: AsyncSession = Depends(get_db)):
+    # Kill-switch: block signup once today's estimated OpenAI cost crosses
+    # DAILY_BUDGET_USD. Existing sessions continue, only new email signups
+    # are stopped — abuse can't keep spawning fresh sessions.
+    await check_budget(db)
+
     email = body.email.lower()
     backend_url = os.getenv("BACKEND_PUBLIC_URL", "http://localhost:8000")
 

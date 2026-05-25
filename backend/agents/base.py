@@ -126,3 +126,5 @@ class BaseAgent(ABC):
                     chunk.usage.prompt_tokens, chunk.usage.completion_tokens,
                     finish_reason or "?",
                 )
+                from db.usage import log_usage
+                await log_usage(model, chunk.usage.prompt_tokens, chunk.usage.completion_tokens)
