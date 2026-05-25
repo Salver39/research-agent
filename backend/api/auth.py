@@ -24,6 +24,7 @@ MAGIC_LINK_TTL_MINUTES = 15
 
 class RequestMagicLinkBody(BaseModel):
     email: EmailStr
+    cf_token: Optional[str] = None
 
 
 class MeResponse(BaseModel):
@@ -62,6 +63,29 @@ async def maybe_require_user(
     return await require_user(authorization=authorization, db=db)
 
 
+async def _verify_turnstile(token: Optional[str]) -> None:
+    """Validate Cloudflare Turnstile token. No-op if TURNSTILE_SECRET_KEY unset
+    (self-host or local dev). Raises 403 on failure."""
+    secret = os.getenv("TURNSTILE_SECRET_KEY")
+    if not secret:
+        return
+    if not token:
+        raise HTTPException(status_code=403, detail="Turnstile token missing")
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        resp = await client.post(
+            "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+            data={"secret": secret, "response": token},
+        )
+    try:
+        data = resp.json()
+    except Exception:
+        logger.error("Turnstile verify: non-JSON response status=%s body=%r", resp.status_code, resp.text[:200])
+        raise HTTPException(status_code=502, detail="Turnstile verify upstream error")
+    if not data.get("success"):
+        logger.warning("Turnstile verify failed: %s", data.get("error-codes"))
+        raise HTTPException(status_code=403, detail="Turnstile validation failed")
+
+
 async def _send_magic_link_email(to_email: str, verify_url: str) -> None:
     api_key = os.getenv("RESEND_API_KEY")
     from_addr = os.getenv("RESEND_FROM", "onboarding@resend.dev")
@@ -93,6 +117,9 @@ async def _send_magic_link_email(to_email: str, verify_url: str) -> None:
 
 @router.post("/auth/request")
 async def request_magic_link(body: RequestMagicLinkBody, db: AsyncSession = Depends(get_db)):
+    # Anti-bot: Cloudflare Turnstile token check (no-op if not configured).
+    await _verify_turnstile(body.cf_token)
+
     # Kill-switch: block signup once today's estimated OpenAI cost crosses
     # DAILY_BUDGET_USD. Existing sessions continue, only new email signups
     # are stopped — abuse can't keep spawning fresh sessions.
