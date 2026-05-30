@@ -18,4 +18,4 @@ ENV UPLOAD_DIR=/data/uploads \
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["sh", "-c", "echo '=== DIAG: mount ==='; mount | grep -E 'data|vol_' || echo 'NO /data mount line'; echo '=== DIAG: /data BEFORE alembic ==='; ls -la /data 2>&1; df -h /data 2>&1; echo '=== running alembic ==='; alembic upgrade head; echo '=== DIAG: /data AFTER alembic ==='; ls -la /data; df -h /data; echo '=== starting uvicorn ==='; exec uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
