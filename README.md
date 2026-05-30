@@ -190,7 +190,7 @@ docker compose -p research-agent up -d --build
 ├── research_agent.db        # SQLite — сессии и состояние
 ├── chroma_db/               # векторный индекс RAG
 ├── uploads/<session_id>/    # загруженные пользователем файлы
-└── outputs/<session_id>/    # сгенерированные .docx/.pdf
+└── outputs/<session_id>/    # сгенерированные .docx
 ```
 
 Сброс состояния под ноль: `docker compose -p research-agent down && rm -rf data`.
@@ -263,7 +263,7 @@ docker compose -p research-agent down
 | POST | `/api/session/{id}/retreat` | Откатиться на предыдущий этап |
 | POST | `/api/upload/{id}` | Загрузить файл в RAG-контекст |
 | DELETE | `/api/upload/{id}/{filename}` | Удалить файл (только на стадии context) |
-| GET | `/api/download/{id}?doc=...&format=docx\ | pdf` | Скачать один документ |
+| GET | `/api/download/{id}?doc=...&format=docx` | Скачать один документ |
 | GET | `/api/download/{id}?format=zip` | Скачать ZIP-пакет |
 | POST | `/api/validate-clarity` | Pre-flight проверка качества полей брифа |
 
@@ -331,7 +331,7 @@ Frontend на `Next.js 14.2.35` (последний patch ветки 14.2.x). `n
 ## Деплой
 
 - **Frontend → Vercel.** `vercel deploy` из папки `frontend/`.
-- **Backend → Railway / любой VPS с Docker.** Требует системных зависимостей WeasyPrint (`pango`, `cairo`, `gdk-pixbuf`, `libffi`) для PDF-генерации. Если PDF не нужен — можно убрать.
+- **Backend → Railway / любой VPS с Docker.** Никаких системных зависимостей — образ Python + pip-deps.
 - **Vercel для бэка не подходит** — SSE-стримы длятся минуты, serverless функции прибьют по таймауту.
 - Нужен persistent volume для `research_agent.db`, `uploads/`, `chroma_db/`, `outputs/`.
 

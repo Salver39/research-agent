@@ -26,45 +26,27 @@ async def generate_all(
     state: dict[str, Any],
     output_dir: str,
     doc_name: Optional[str] = None,
-    fmt: str = "docx",
 ) -> Any:
     defs = _doc_definitions()
     if doc_name:
         fn = defs.get(doc_name)
         if fn is None:
             return None
-        return _save(fn(state), output_dir, doc_name, fmt)
+        return _save(fn(state), output_dir, doc_name)
 
     paths: list[str] = []
     for name, fn in defs.items():
-        doc = fn(state)
-        docx_path = _save(doc, output_dir, name, "docx")
+        docx_path = _save(fn(state), output_dir, name)
         if docx_path:
             paths.append(docx_path)
-        pdf_path = _save(doc, output_dir, name, "pdf")
-        if pdf_path:
-            paths.append(pdf_path)
     return paths
 
 
-def _save(doc: DocxDocument, output_dir: str, name: str, fmt: str) -> Optional[str]:
+def _save(doc: DocxDocument, output_dir: str, name: str) -> Optional[str]:
     import re as _re
     safe = _re.sub(r"[^\w\s\-.]", "", name).replace(" ", "_")
     docx_path = os.path.join(output_dir, f"{safe}.docx")
     doc.save(docx_path)
-
-    if fmt == "pdf":
-        pdf_path = os.path.join(output_dir, f"{safe}.pdf")
-        try:
-            import mammoth
-            from weasyprint import HTML
-            with open(docx_path, "rb") as f:
-                html_content = mammoth.convert_to_html(f).value
-            HTML(string=html_content).write_pdf(pdf_path)
-        except Exception:
-            return None
-        return pdf_path
-
     return docx_path
 
 

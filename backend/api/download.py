@@ -42,16 +42,14 @@ async def download_document(
             media_type="application/zip",
         )
 
+    if format != "docx":
+        raise HTTPException(status_code=400, detail="format must be 'docx' or 'zip'")
+
     if not doc:
         raise HTTPException(status_code=400, detail="doc parameter required")
 
-    file_path = await generate_all(state, output_dir, doc_name=doc, fmt=format)
+    file_path = await generate_all(state, output_dir, doc_name=doc)
     if not file_path or not os.path.exists(file_path):
-        if format == "pdf":
-            raise HTTPException(
-                status_code=503,
-                detail="PDF generation unavailable — download .docx instead",
-            )
         raise HTTPException(status_code=404, detail="Document not generated")
 
     return FileResponse(file_path, filename=os.path.basename(file_path))

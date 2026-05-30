@@ -16,7 +16,6 @@ export function OutputScreen({ sessionId }: { sessionId: string }) {
   const [generating, setGenerating] = useState(false);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [pdfError, setPdfError] = useState<string | null>(null);
   const [zipUrl, setZipUrl] = useState<string | null>(null);
 
   async function handleGenerate() {
@@ -37,34 +36,11 @@ export function OutputScreen({ sessionId }: { sessionId: string }) {
     }
   }
 
-  function docUrl(name: string, fmt: string) {
+  function docUrl(name: string) {
     return withTokenQuery(
-      `/api/backend/api/download/${sessionId}?doc=${encodeURIComponent(name)}&format=${fmt}`,
+      `/api/backend/api/download/${sessionId}?doc=${encodeURIComponent(name)}&format=docx`,
       sessionId,
     );
-  }
-
-  async function handlePdfDownload(name: string) {
-    setPdfError(null);
-    try {
-      const url = docUrl(name, "pdf");
-      const res = await fetch(url);
-      if (!res.ok) {
-        if (res.status === 503) {
-          setPdfError("PDF-генерация недоступна. Скачайте .docx.");
-          return;
-        }
-        throw new Error(`HTTP ${res.status}`);
-      }
-      const blob = await res.blob();
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `${name}.pdf`;
-      a.click();
-      URL.revokeObjectURL(a.href);
-    } catch (e) {
-      setPdfError(e instanceof Error ? e.message : "Ошибка скачивания PDF");
-    }
   }
 
   return (
@@ -79,12 +55,6 @@ export function OutputScreen({ sessionId }: { sessionId: string }) {
       {error && (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
-        </div>
-      )}
-
-      {pdfError && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-          {pdfError}
         </div>
       )}
 
@@ -118,22 +88,13 @@ export function OutputScreen({ sessionId }: { sessionId: string }) {
                   <span>{doc.icon}</span>
                   {doc.name}
                 </span>
-                <div className="flex gap-2">
-                  <a
-                    href={docUrl(doc.name, "docx")}
-                    className="rounded-lg border border-gray-200 px-3 py-1 text-xs font-medium
-                               text-gray-600 hover:bg-gray-50 transition-colors"
-                  >
-                    .docx
-                  </a>
-                  <button
-                    onClick={() => handlePdfDownload(doc.name)}
-                    className="rounded-lg border border-gray-200 px-3 py-1 text-xs font-medium
-                               text-gray-600 hover:bg-gray-50 transition-colors"
-                  >
-                    .pdf
-                  </button>
-                </div>
+                <a
+                  href={docUrl(doc.name)}
+                  className="rounded-lg border border-gray-200 px-3 py-1 text-xs font-medium
+                             text-gray-600 hover:bg-gray-50 transition-colors"
+                >
+                  .docx
+                </a>
               </li>
             ))}
           </ul>
