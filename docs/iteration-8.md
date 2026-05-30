@@ -25,7 +25,7 @@
 ### Что поднято до INFO (постоянно)
 
 | Файл:строка | Лог |
-|---|---|
+| --- | --- |
 | `backend/api/stream.py:58` | `"Agent stream finished, %d chunks, total len=%d"` |
 | `backend/api/stream.py:60` | `"State persisted in memory"` |
 | `backend/api/stream.py:72` | `"DB committed, sending [DONE]"` |
@@ -57,7 +57,7 @@
 
 **Ключевая улика:** в логе **не появилось** ни `asyncio.gather done`, ни `Agent stream finished`, ни persist/lock/commit. Все наши таймеры остались тихими.
 
-Это означало: hang происходит **внутри `asyncio.gather`** — он никогда не возвращает управление, даже после получения всех 15 HTTP-ответов от OpenAI. Гипотезы 1 (persist JSON parse) и 3 (db.commit) исключены.
+Это означало: hang происходит **внутри ****`asyncio.gather`** — он никогда не возвращает управление, даже после получения всех 15 HTTP-ответов от OpenAI. Гипотезы 1 (persist JSON parse) и 3 (db.commit) исключены.
 
 Остались: H2 (httpx connection pool deadlock) и H4 (asyncio.gather edge case на Python 3.9).
 
@@ -98,10 +98,10 @@ async def bounded_complete(system, user_msg, idx, ..., budget=140.0):
 
 ✅ **Singleton сработал**: все 16 запросов стартовали **одновременно** в 14:26:02 за 20 мс (раньше растягивались на 12–15 сек).
 ✅ **15 hypothesis блоков** отработали за 10–20 сек каждый.
-❌ **Block 0 (frame, max_tokens=2500) не вернулся** — даже HTTP Request от OpenAI для него в логе не появился.
-❌ **`bounded_complete(140s)` не сработал** — должен был таймаутнуть через 2.3 мин, не сработал.
+❌ **Block 0 (frame, max\_tokens=2500) не вернулся** — даже HTTP Request от OpenAI для него в логе не появился.
+❌ **`bounded_complete(140s)`**** не сработал** — должен был таймаутнуть через 2.3 мин, не сработал.
 
-Это подтвердило **известный bag `asyncio.wait_for` на Python 3.9**: cancellation не пробивается через C-код httpx, поэтому wait_for сам зависает на отменяемой корутине.
+Это подтвердило **известный bag ****`asyncio.wait_for`**** на Python 3.9**: cancellation не пробивается через C-код httpx, поэтому wait_for сам зависает на отменяемой корутине.
 
 ### C+ — `timeout=240, max_retries=0, budget=260`
 
@@ -140,7 +140,7 @@ results = await asyncio.gather(
 
 ### Решение: переделать дизайн на single-shot
 
-Удалили всю параллельную генерацию из трёх design-агентов. Теперь они используют **тот же `BaseAgent.stream()`**, что и все остальные этапы wizard'а (бриф, диагноз, гипотезы, метод, выборка) — `chat.completions.create(stream=True)`. Один большой prompt, один большой ответ.
+Удалили всю параллельную генерацию из трёх design-агентов. Теперь они используют **тот же ****`BaseAgent.stream()`**, что и все остальные этапы wizard'а (бриф, диагноз, гипотезы, метод, выборка) — `chat.completions.create(stream=True)`. Один большой prompt, один большой ответ.
 
 ### Изменения в коде
 
@@ -195,10 +195,10 @@ results = await asyncio.gather(
 ### Что осталось нерешённым
 
 1. **gpt-5.5 reasoning слишком медленный на этом API-ключе** для дизайна-как-один-запрос. Возможные направления:
-   - Уменьшить `max_tokens` (например 8000) — может ускорить reasoning
-   - Переключить дизайн на `gpt-5.4` (mini) — потеря качества vs скорость
-   - Дождаться, проверить — может реально работает за 5–7 минут на gpt-5.5, и это просто нужно принять
-   - Обратиться к OpenAI о rate limits / quota / tier upgrade
+  - Уменьшить `max_tokens` (например 8000) — может ускорить reasoning
+  - Переключить дизайн на `gpt-5.4` (mini) — потеря качества vs скорость
+  - Дождаться, проверить — может реально работает за 5–7 минут на gpt-5.5, и это просто нужно принять
+  - Обратиться к OpenAI о rate limits / quota / tier upgrade
 2. **Python 3.9** остаётся ограничением. Upgrade на 3.11+ даст работающий `asyncio.wait_for` / `asyncio.timeout` — это полезно как defensive layer на будущее, но **не решит** базовую проблему скорости gpt-5.5 reasoning.
 
 ---
